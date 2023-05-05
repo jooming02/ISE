@@ -105,6 +105,7 @@ for s in stats:
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
+i=0
 for co in cont:
     # print("Area : ", cv2.contourArea(co), ", ---- Perimeter : ", cv2.arcLength(co, True))
     area = cv2.contourArea(co)
@@ -113,6 +114,11 @@ for co in cont:
     if area > 1200:
         contour.append(len(approx_cont))
         cv2.drawContours(img_contour, [approx_cont], -1, (255, 0, 0), 5)
+        M = cv2.moments(co)
+        cx = int(M['m10'] / M['m00'])
+        cy = int(M['m01'] / M['m00'])
+        cv2.putText(img_contour, str(i), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i=i+1;
 
 triangle = 0
 rectangle = 0
@@ -134,7 +140,7 @@ print("Number of green objects:" + str(green))
 print("Number of blue objects:" + str(blue))
 print("Number of other color objects:" + str(cnt - blue))
 
-# cv2.imshow("contour", img_contour)
+cv2.imshow("contour", img_contour)
 cv2.imshow("Detect Object", img_resized)
 # cv2.imshow("BlackWhite", bw)
 # cv2.imshow("GreyScale", grey)
