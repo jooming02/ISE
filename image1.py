@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-img = cv2.imread("image11.jpg")
+img = cv2.imread("image1.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
 # create a new copy of resized image for contouring
@@ -11,14 +11,13 @@ grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
 r, bw = cv2.threshold(grey, 100, 255, cv2.THRESH_BINARY)
 
-
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Apply blurring effect
 mask = cv2.GaussianBlur(bw, (5, 5), 2)
 # Close the gaps
 mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
-# Fill the region with a blue color
+# Fill the region with white color
 cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
 cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
 
@@ -36,7 +35,6 @@ table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
 cv2.copyTo(img_resized,mask,table_bgnd)
 cv2.imshow("BG", table_bgnd)
-
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 print("Number of connected components : ",N)
@@ -81,7 +79,7 @@ print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)
 print("Number of circles: ", circle)
 print("Number of objects: ", cnt)
-cv2.imshow("contour", img_contour)
+#cv2.imshow("contour", img_contour)
 cv2.imshow("original", img_resized)
 cv2.imshow("BlackWhite", bw)
 #cv2.imshow("GreyScale", grey)
