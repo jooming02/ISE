@@ -60,7 +60,42 @@ green = checkArea(contours2, (0, 255, 0))
 blue = checkArea(contours3, (255, 0, 0))
 ################################################ OBJECT COLOR END ################################
 
+################################################ One By One Start ################################
+# Convert to grayscale image
+grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
+# Convert to binary image
+r, bw = cv2.threshold(grey, 100,  255, cv2.THRESH_BINARY)
 
+
+# Kernel for morphology
+morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+# Apply blurring effect
+img_filtered = cv2.GaussianBlur(bw, (5, 5), 5)
+img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=2)
+
+# Contouring
+cont, hier = cv2.findContours(img_filtered, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
+
+result=[]
+img_obj=np.copy(img_resized)
+
+
+for co in cont:
+    area = cv2.contourArea(co)
+    if area >1200:
+        mask = np.zeros(img_resized.shape[:2], np.uint8)
+        cv2.drawContours(mask, [co], -1, 255, -1)
+        result.append(cv2.bitwise_and(img_obj, img_obj, mask=mask))
+
+i=0
+while i<len(result):
+    cv2.imshow("object"+str(i+1), result[i])
+    i=i+1
+
+################################################ One By One Start ################################
+
+
+################################################ Change BackGround Start ################################
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Apply blurring effect
@@ -85,6 +120,8 @@ table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
 cv2.copyTo(img_resized, mask, table_bgnd)
 cv2.imshow("Change Background", table_bgnd)
+
+################################################ Change BackGround End ################################
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 print("Number of connected components : ", N)
