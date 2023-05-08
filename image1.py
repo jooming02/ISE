@@ -1,11 +1,10 @@
 import cv2
 import numpy as np
 
+# Read the image file
 img = cv2.imread("image1.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
-# create a new copy of resized image for contouring
-img_contour = np.copy(img_resized)
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
@@ -14,7 +13,7 @@ r, bw = cv2.threshold(grey, 100, 255, cv2.THRESH_BINARY)
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
 ################################################ OBJECT COLOR START ################################
-# create a new copy of resized image for check color
+# create a new copy of resized image to count the total number of object in different colour.
 img_color = np.copy(img_resized)
 # Convert to HSV color space
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
@@ -29,12 +28,12 @@ upper_green = np.array([80, 255, 255])
 lower_blue = np.array([90, 50, 50])
 upper_blue = np.array([130, 255, 255])
 
-# Threshold the image to get a binary mask of the orange pixels
+# Threshold the image to get a binary mask of the colour pixels
 mask1 = cv2.inRange(hsv, lower_red, upper_red)
 mask2 = cv2.inRange(hsv, lower_green, upper_green)
 mask3 = cv2.inRange(hsv, lower_blue, upper_blue)
 
-# Apply a morphological closing operation to merge nearby orange circles
+# Apply a morphological closing operation to merge the nearby same colour area
 kernel = np.ones((21, 21), np.uint8)
 mask1 = cv2.morphologyEx(mask1, cv2.MORPH_CLOSE, kernel)
 mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernel)
@@ -46,7 +45,7 @@ contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPL
 contours3, _ = cv2.findContours(mask3, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 
-# Draw the contours on the original image
+# Draw the contours on the image
 def checkArea(contour, colour):
     color = 0
     for co in contour:
@@ -56,13 +55,14 @@ def checkArea(contour, colour):
             color += 1
     return color
 
-
+# Red, green, and blue colour .....
 red = checkArea(contours1, (0, 0, 255))
 green = checkArea(contours2, (0, 255, 0))
 blue = checkArea(contours3, (255, 0, 0))
+
 ################################################ OBJECT COLOR END ################################
 
-################################################ One By One Start ################################
+################################################ Extract One By One Start ################################
 # Apply blurring effect
 img_filtered = cv2.GaussianBlur(bw, (5, 5), 2)
 img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
@@ -70,8 +70,9 @@ img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations
 cont, hier = cv2.findContours(img_filtered, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 result=[]
-img_obj=np.copy(img_resized)
 
+# create a new copy of resized image to extract object one by one
+img_obj=np.copy(img_resized)
 
 for co in cont:
     area = cv2.contourArea(co)
@@ -82,6 +83,7 @@ for co in cont:
 
 i=0
 while i<len(result):
+    #
     cv2.imshow("object"+str(i+1), result[i])
     i=i+1
 
@@ -110,25 +112,31 @@ table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
 cv2.copyTo(img_resized, mask, table_bgnd)
 
+cv2.imshow("Blue Background", blue_bgnd)
+cv2.imshow("Change Background", table_bgnd)
+
 ################################################ Change BackGround End ################################
 
 ################################################ find shape,total and size Start ################################
+# create a new copy of resized image to count the total number of object in the image
 img_detect=np.copy(img_resized)
+# create a new copy of resized image to count the total number of object in different shape
+img_contour = np.copy(img_resized)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
-print("Number of connected components : ", N)
-print(" Indices : ", np.unique(idx))
+# print("Number of connected components : ", N)
+# print(" Indices : ", np.unique(idx))
+
 # Declare the counter as 0
 cnt = 0
 for s in stats:
     x = s[0]
     y = s[1]
-    w = s[2]
-    h = s[3]
-    # print(w)
-    if w > 10 and w < 106:
+    width = s[2]
+    height = s[3]
+    if width > 10 and width < 106:
         cnt += 1
-        cv2.rectangle(img_detect, (x, y), (x + w, y + h), (0, 0, 255), 3)
+        cv2.rectangle(img_detect, (x, y), (x + width, y + height), (0, 0, 255), 3)
 
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
@@ -170,8 +178,10 @@ cxl = int(L['m10'] / L['m00'])
 cyl = int(L['m01'] / L['m00'])
 cxs = int(S['m10'] / S['m00'])
 cys = int(S['m01'] / S['m00'])
+# Adding text
 cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+#
 cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
 cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
 
@@ -186,10 +196,13 @@ for i in contour:
     else:
         circle += 1
 
+cv2.imshow("contour", img_contour)
+cv2.imshow("check size", img_size)
+cv2.imshow("Detect Object", img_detect)
 
 ################################################ find shape,total and size End ################################
 
-
+# Display result
 print("Number of objects: ", cnt)
 print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
@@ -202,13 +215,6 @@ print("Number of blue objects:" + str(blue))
 print("Number of other color objects:" + str(cnt - blue))
 print("-----------------------------------------------------------")
 
-
-cv2.imshow("Blue Background", blue_bgnd)
-cv2.imshow("Change Background", table_bgnd)
-cv2.imshow("contour", img_contour)
-cv2.imshow("check size", img_size)
-cv2.imshow("Detect Object", img_detect)
-cv2.imshow('Number of different colors object (Result)', img_color)
 # cv2.imshow("BlackWhite", bw)
 # cv2.imshow("GreyScale", grey)
 # cv2.imshow("Mask", mask)
