@@ -10,6 +10,8 @@ img_contour = np.copy(img_resized)
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
 r, bw = cv2.threshold(grey, 100, 255, cv2.THRESH_BINARY)
+# Kernel for morphology
+morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
 ################################################ OBJECT COLOR START ################################
 # create a new copy of resized image for check color
@@ -61,18 +63,9 @@ blue = checkArea(contours3, (255, 0, 0))
 ################################################ OBJECT COLOR END ################################
 
 ################################################ One By One Start ################################
-# Convert to grayscale image
-grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
-# Convert to binary image
-r, bw = cv2.threshold(grey, 100,  255, cv2.THRESH_BINARY)
-
-
-# Kernel for morphology
-morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
 # Apply blurring effect
-img_filtered = cv2.GaussianBlur(bw, (5, 5), 5)
-img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=2)
-
+img_filtered = cv2.GaussianBlur(bw, (5, 5), 2)
+img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
 # Contouring
 cont, hier = cv2.findContours(img_filtered, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
@@ -96,8 +89,6 @@ while i<len(result):
 
 
 ################################################ Change BackGround Start ################################
-# Kernel for morphology
-morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Apply blurring effect
 mask = cv2.GaussianBlur(bw, (5, 5), 2)
 # Close the gaps
@@ -111,7 +102,6 @@ blue_bgnd = np.zeros_like(img_resized)
 blue_bgnd[:, :, 0] = 255  # blue color
 # Copy each object in the image to blue background
 cv2.copyTo(img_resized, mask, blue_bgnd)
-cv2.imshow("Blue Background", blue_bgnd)
 
 # Import a background image
 table_bgnd = cv2.imread("background.jpg")
@@ -119,9 +109,11 @@ height, width = img_resized.shape[:2]
 table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
 cv2.copyTo(img_resized, mask, table_bgnd)
-cv2.imshow("Change Background", table_bgnd)
 
 ################################################ Change BackGround End ################################
+
+################################################ find shape,total and size Start ################################
+img_detect=np.copy(img_resized)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 print("Number of connected components : ", N)
@@ -136,13 +128,19 @@ for s in stats:
     # print(w)
     if w > 10 and w < 106:
         cnt += 1
-        cv2.rectangle(img_resized, (x, y), (x + w, y + h), (0, 0, 255), 3)
+        cv2.rectangle(img_detect, (x, y), (x + w, y + h), (0, 0, 255), 3)
 
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
 i=0
+
+max_area = 0
+min_area = float('inf')
+largest = None
+smallest = None
+
 for co in cont:
     # print("Area : ", cv2.contourArea(co), ", ---- Perimeter : ", cv2.arcLength(co, True))
     area = cv2.contourArea(co)
@@ -154,8 +152,28 @@ for co in cont:
         M = cv2.moments(co)
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
-        cv2.putText(img_contour, str(i), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        cv2.putText(img_detect, str(i+1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
         i=i+1;
+        if area > max_area:
+            max_area = area
+            largest = co
+
+        if area < min_area:
+            min_area = area
+            smallest = co
+
+
+img_size=np.copy(img_resized)
+L = cv2.moments(largest)
+S = cv2.moments(smallest)
+cxl = int(L['m10'] / L['m00'])
+cyl = int(L['m01'] / L['m00'])
+cxs = int(S['m10'] / S['m00'])
+cys = int(S['m01'] / S['m00'])
+cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
+cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
 
 triangle = 0
 rectangle = 0
@@ -168,21 +186,31 @@ for i in contour:
     else:
         circle += 1
 
+
+################################################ find shape,total and size End ################################
+
+
 print("Number of objects: ", cnt)
+print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)
 print("Number of circles: ", circle)
+print("-----------------------------------------------------------")
 print("Number of red objects:" + str(red))
 print("Number of green objects:" + str(green))
 print("Number of blue objects:" + str(blue))
 print("Number of other color objects:" + str(cnt - blue))
+print("-----------------------------------------------------------")
 
+
+cv2.imshow("Blue Background", blue_bgnd)
+cv2.imshow("Change Background", table_bgnd)
 cv2.imshow("contour", img_contour)
-cv2.imshow("Detect Object", img_resized)
+cv2.imshow("check size", img_size)
+cv2.imshow("Detect Object", img_detect)
+cv2.imshow('Number of different colors object (Result)', img_color)
 # cv2.imshow("BlackWhite", bw)
 # cv2.imshow("GreyScale", grey)
 # cv2.imshow("Mask", mask)
 # Display the result
-cv2.imshow('Number of different colors object (Result)', img_color)
-
 cv2.waitKey(0)
