@@ -55,6 +55,7 @@ def checkArea(contour, colour):
             color += 1
     return color
 
+
 # Red, green, and blue colour .....
 red = checkArea(contours1, (0, 0, 255))
 green = checkArea(contours2, (0, 255, 0))
@@ -69,23 +70,23 @@ img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations
 # Contouring
 cont, hier = cv2.findContours(img_filtered, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
-result=[]
+result = []
 
 # create a new copy of resized image to extract object one by one
-img_obj=np.copy(img_resized)
+img_obj = np.copy(img_resized)
 
 for co in cont:
     area = cv2.contourArea(co)
-    if area >1200:
+    if area > 1200:
         mask = np.zeros(img_resized.shape[:2], np.uint8)
         cv2.drawContours(mask, [co], -1, 255, -1)
         result.append(cv2.bitwise_and(img_obj, img_obj, mask=mask))
 
-i=0
-while i<len(result):
+i = 0
+while i < len(result):
     #
-    cv2.imshow("object"+str(i+1), result[i])
-    i=i+1
+    cv2.imshow("object" + str(i + 1), result[i])
+    i = i + 1
 
 ################################################ One By One Start ################################
 
@@ -119,7 +120,7 @@ cv2.imshow("Change Background", table_bgnd)
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
-img_detect=np.copy(img_resized)
+img_detect = np.copy(img_resized)
 # create a new copy of resized image to count the total number of object in different shape
 img_contour = np.copy(img_resized)
 
@@ -142,7 +143,7 @@ for s in stats:
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
-i=0
+i = 0
 
 max_area = 0
 min_area = float('inf')
@@ -157,31 +158,38 @@ for co in cont:
     if area > 1200:
         contour.append(len(approx_cont))
         cv2.drawContours(img_contour, [approx_cont], -1, (255, 0, 0), 5)
+        # find the center of mass for object
         M = cv2.moments(co)
         cx = int(M['m10'] / M['m00'])
         cy = int(M['m01'] / M['m00'])
-        cv2.putText(img_detect, str(i+1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        i=i+1;
+        # Add text to each object
+        cv2.putText(img_detect, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i = i + 1
+
+        # find the largest object
         if area > max_area:
             max_area = area
             largest = co
-
+        # find the smallest object
         if area < min_area:
             min_area = area
             smallest = co
 
+img_size = np.copy(img_resized)
 
-img_size=np.copy(img_resized)
+# find the center of mass for object
 L = cv2.moments(largest)
 S = cv2.moments(smallest)
 cxl = int(L['m10'] / L['m00'])
 cyl = int(L['m01'] / L['m00'])
 cxs = int(S['m10'] / S['m00'])
 cys = int(S['m01'] / S['m00'])
-# Adding text
+
+# Adding text to largest and smallest object
 cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-#
+
+# draw the contour for largest object and smallest object
 cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
 cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
 
