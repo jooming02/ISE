@@ -5,12 +5,109 @@ import numpy as np
 img = cv2.imread("image1.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
+# cv2.imshow("Original Image", img)
+# cv2.imshow("Resized Image", img_resized)
+
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
 r, bw = cv2.threshold(grey, 100, 255, cv2.THRESH_BINARY)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
+
+
+################################################ find shape,total and size Start ################################
+# create a new copy of resized image to count the total number of object in the image
+img_counting = np.copy(img_resized)
+# create a new copy of resized image to count the total number of object in different shape
+img_shape = np.copy(img_resized)
+
+N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
+# print("Number of connected components : ", N)
+# print(" Indices : ", np.unique(idx))
+
+# Declare the counter as 0
+cnt = 0
+for s in stats:
+    x = s[0]
+    y = s[1]
+    width = s[2]
+    height = s[3]
+    if width > 10 and width < 106:
+        cnt += 1
+        cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
+
+# Contouring
+cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
+
+contour = []
+i = 0
+
+max_area = 0
+min_area = float('inf')
+largest = None
+smallest = None
+
+for co in cont:
+    # print("Area : ", cv2.contourArea(co), ", --- Perimeter : ", cv2.arcLength(co, True))
+    area = cv2.contourArea(co)
+    eps = 0.04 * cv2.arcLength(co, True)
+    approx_cont = cv2.approxPolyDP(co, eps, True)
+    if area > 1200:
+        contour.append(len(approx_cont))
+        cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 5)
+        # find the center of mass for object
+        M = cv2.moments(co)
+        cx = int(M['m10'] / M['m00'])
+        cy = int(M['m01'] / M['m00'])
+        # Add text to each object
+        cv2.putText(img_counting, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i = i + 1
+
+        # find the largest object
+        if area > max_area:
+            max_area = area
+            largest = co
+        # find the smallest object
+        if area < min_area:
+            min_area = area
+            smallest = co
+
+# create a new copy of resized image to draw the largest and smallest object
+img_size = np.copy(img_resized)
+
+# find the center of mass for object
+L = cv2.moments(largest)
+S = cv2.moments(smallest)
+cxl = int(L['m10'] / L['m00'])
+cyl = int(L['m01'] / L['m00'])
+cxs = int(S['m10'] / S['m00'])
+cys = int(S['m01'] / S['m00'])
+
+# Adding text to largest and smallest object
+cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+# draw the contour for largest object and smallest object
+cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
+cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
+
+triangle = 0
+rectangle = 0
+circle = 0
+for i in contour:
+    if i == 3:
+        triangle += 1
+    elif i == 4:
+        rectangle += 1
+    else:
+        circle += 1
+
+cv2.imshow("Different Shape", img_shape)
+cv2.imshow("Check Size", img_size)
+cv2.imshow("Detect Object", img_counting)
+
+################################################ find shape,total and size End ################################
 
 ################################################ OBJECT COLOR START ################################
 # create a new copy of resized image to count the total number of object in different colour.
@@ -44,7 +141,6 @@ contours1, _ = cv2.findContours(mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPL
 contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 contours3, _ = cv2.findContours(mask3, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-
 # Draw the contours on the image
 def checkArea(contour, colour):
     color = 0
@@ -63,12 +159,23 @@ blue = checkArea(contours3, (255, 0, 0))
 
 ################################################ OBJECT COLOR END ################################
 
+# Display result
+print("Number of objects: ", cnt)
+print("-----------------------------------------------------------")
+print("Number of triangles: ", triangle)
+print("Number of rectangles: ", rectangle)
+print("Number of circles: ", circle)
+print("-----------------------------------------------------------")
+print("Number of red objects:" + str(red))
+print("Number of green objects:" + str(green))
+print("Number of blue objects:" + str(blue))
+print("Number of other color objects:" + str(cnt - blue))
+print("-----------------------------------------------------------")
+
 ################################################ Extract One By One Start ################################
-# Apply blurring effect
-img_filtered = cv2.GaussianBlur(bw, (5, 5), 2)
-img_filtered = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
+
 # Contouring
-cont, hier = cv2.findContours(img_filtered, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
+cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 result = []
 
@@ -88,17 +195,18 @@ while i < len(result):
     cv2.imshow("object" + str(i + 1), result[i])
     i = i + 1
 
-################################################ One By One Start ################################
-
+################################################ One By One End ################################
 
 ################################################ Change BackGround Start ################################
-# Apply blurring effect
-mask = cv2.GaussianBlur(bw, (5, 5), 2)
+# cv2.imshow("BlackWhite", bw)
 # Close the gaps
 mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
+#cv2.imshow("Morphology Close", mask)
+
 # Fill the region with white color
 cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
 cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
+#cv2.imshow("Mask", mask)
 
 # Create a blue background
 blue_bgnd = np.zeros_like(img_resized)
@@ -114,117 +222,10 @@ table_bgnd = cv2.resize(table_bgnd, (width, height))
 cv2.copyTo(img_resized, mask, table_bgnd)
 
 cv2.imshow("Blue Background", blue_bgnd)
-cv2.imshow("Change Background", table_bgnd)
+cv2.imshow("Table Background", table_bgnd)
 
 ################################################ Change BackGround End ################################
-
-################################################ find shape,total and size Start ################################
-# create a new copy of resized image to count the total number of object in the image
-img_detect = np.copy(img_resized)
-# create a new copy of resized image to count the total number of object in different shape
-img_contour = np.copy(img_resized)
-
-N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
-# print("Number of connected components : ", N)
-# print(" Indices : ", np.unique(idx))
-
-# Declare the counter as 0
-cnt = 0
-for s in stats:
-    x = s[0]
-    y = s[1]
-    width = s[2]
-    height = s[3]
-    if width > 10 and width < 106:
-        cnt += 1
-        cv2.rectangle(img_detect, (x, y), (x + width, y + height), (0, 0, 255), 3)
-
-# Contouring
-cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
-
-contour = []
-i = 0
-
-max_area = 0
-min_area = float('inf')
-largest = None
-smallest = None
-
-for co in cont:
-    # print("Area : ", cv2.contourArea(co), ", ---- Perimeter : ", cv2.arcLength(co, True))
-    area = cv2.contourArea(co)
-    eps = 0.04 * cv2.arcLength(co, True)
-    approx_cont = cv2.approxPolyDP(co, eps, True)
-    if area > 1200:
-        contour.append(len(approx_cont))
-        cv2.drawContours(img_contour, [approx_cont], -1, (255, 0, 0), 5)
-        # find the center of mass for object
-        M = cv2.moments(co)
-        cx = int(M['m10'] / M['m00'])
-        cy = int(M['m01'] / M['m00'])
-        # Add text to each object
-        cv2.putText(img_detect, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        i = i + 1
-
-        # find the largest object
-        if area > max_area:
-            max_area = area
-            largest = co
-        # find the smallest object
-        if area < min_area:
-            min_area = area
-            smallest = co
-
-img_size = np.copy(img_resized)
-
-# find the center of mass for object
-L = cv2.moments(largest)
-S = cv2.moments(smallest)
-cxl = int(L['m10'] / L['m00'])
-cyl = int(L['m01'] / L['m00'])
-cxs = int(S['m10'] / S['m00'])
-cys = int(S['m01'] / S['m00'])
-
-# Adding text to largest and smallest object
-cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-# draw the contour for largest object and smallest object
-cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
-cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
-
-triangle = 0
-rectangle = 0
-circle = 0
-for i in contour:
-    if i == 3:
-        triangle += 1
-    elif i == 4:
-        rectangle += 1
-    else:
-        circle += 1
-
-cv2.imshow("contour", img_contour)
-cv2.imshow("check size", img_size)
-cv2.imshow("Detect Object", img_detect)
-
-################################################ find shape,total and size End ################################
-
-# Display result
-print("Number of objects: ", cnt)
-print("-----------------------------------------------------------")
-print("Number of triangles: ", triangle)
-print("Number of rectangles: ", rectangle)
-print("Number of circles: ", circle)
-print("-----------------------------------------------------------")
-print("Number of red objects:" + str(red))
-print("Number of green objects:" + str(green))
-print("Number of blue objects:" + str(blue))
-print("Number of other color objects:" + str(cnt - blue))
-print("-----------------------------------------------------------")
-
 # cv2.imshow("BlackWhite", bw)
 # cv2.imshow("GreyScale", grey)
-# cv2.imshow("Mask", mask)
-# Display the result
+
 cv2.waitKey(0)
