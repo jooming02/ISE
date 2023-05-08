@@ -141,21 +141,20 @@ contours1, _ = cv2.findContours(mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPL
 contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 contours3, _ = cv2.findContours(mask3, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-# Draw the contours on the image
-def checkArea(contour, colour):
+# Check color on the image
+def checkColor(contour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
         if area > 1000:
-            cv2.drawContours(img_color, contour, -1, colour, 2)
             color += 1
     return color
 
 
-# Red, green, and blue colour .....
-red = checkArea(contours1, (0, 0, 255))
-green = checkArea(contours2, (0, 255, 0))
-blue = checkArea(contours3, (255, 0, 0))
+# check object with color Red, green, and blue colour
+red = checkColor(contours1)
+green = checkColor(contours2)
+blue = checkColor(contours3)
 
 ################################################ OBJECT COLOR END ################################
 
@@ -169,7 +168,7 @@ print("-----------------------------------------------------------")
 print("Number of red objects:" + str(red))
 print("Number of green objects:" + str(green))
 print("Number of blue objects:" + str(blue))
-print("Number of other color objects:" + str(cnt - blue))
+print("Number of other color objects:" + str(cnt-blue-red-green))
 print("-----------------------------------------------------------")
 
 ################################################ Extract One By One Start ################################
