@@ -181,6 +181,7 @@ result = []
 # create a new copy of resized image to extract object one by one
 img_obj = np.copy(img_resized)
 
+#draw contour one by one in new img_obj
 for co in cont:
     area = cv2.contourArea(co)
     if area > 1200:
