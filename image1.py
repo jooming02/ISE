@@ -184,13 +184,13 @@ img_obj = np.copy(img_resized)
 for co in cont:
     area = cv2.contourArea(co)
     if area > 1200:
-        mask = np.zeros(img_resized.shape[:2], np.uint8)
+        mask = np.zeros(img_obj.shape[:2], np.uint8)
         cv2.drawContours(mask, [co], -1, 255, -1)
         result.append(cv2.bitwise_and(img_obj, img_obj, mask=mask))
 
 i = 0
 while i < len(result):
-    #
+    # Display each object in array result one by one
     cv2.imshow("object" + str(i + 1), result[i])
     i = i + 1
 
