@@ -110,7 +110,7 @@ img_color = np.copy(img_resized)
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
 # Define the range of color in HSV
-lower_red = np.array([0, 255, 255])
+lower_red = np.array([0, 50, 50])
 upper_red = np.array([10, 255, 255])
 
 lower_green = np.array([60, 50, 50])

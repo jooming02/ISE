@@ -5,14 +5,16 @@ import numpy as np
 img = cv2.imread("image12.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.3, fy=0.3)
+brightness = 2
+img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 # cv2.imshow("Original Image", img)
 # cv2.imshow("Resized Image", img_resized)
 
-blurred = cv2.GaussianBlur(img_resized, (3, 3), 0)
 # Convert to grayscale image
-grey = cv2.cvtColor(blurred, cv2.COLOR_BGR2GRAY)
+grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
+# Apply the sharpening kernel to the grayscale image
 # Convert to binary image
-r, bw = cv2.threshold(grey, 140, 255, cv2.THRESH_BINARY_INV)
+r, bw = cv2.threshold(grey,30, 255, cv2.THRESH_BINARY)
 cv2.imshow("bw",bw)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
@@ -30,14 +32,19 @@ N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 
 # Declare the counter as 0
 cnt = 0
+i=0
 for s in stats:
     x = s[0]
     y = s[1]
     width = s[2]
     height = s[3]
-    if width > 10 and width < 106:
+    if width > 40 and width < 500:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
+        w = int(width / 2)
+        h = int(height / 2)
+        cv2.putText(img_counting, str(i + 1), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i = i + 1
 
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
@@ -58,13 +65,6 @@ for co in cont:
     if area > 1200:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 5)
-        # find the center of mass for object
-        M = cv2.moments(co)
-        cx = int(M['m10'] / M['m00'])
-        cy = int(M['m01'] / M['m00'])
-        # Add text to each object
-        cv2.putText(img_counting, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        i = i + 1
 
         # find the largest object
         if area > max_area:
@@ -118,10 +118,10 @@ img_color = np.copy(img_resized)
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
 # Define the range of color in HSV
-lower_red = np.array([0, 255, 255])
+lower_red = np.array([0, 50, 50])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([40, 40, 40])
+lower_green = np.array([20, 40, 40])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])
@@ -163,6 +163,9 @@ blue = checkColor(contours3)
 # Display result
 print("Number of objects: ", cnt)
 print("-----------------------------------------------------------")
+print("Area of Largest Object: ", cv2.contourArea(largest))
+print("Area of Smallest Object: ", cv2.contourArea(smallest))
+print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)
 print("Number of circles: ", circle)
@@ -202,26 +205,27 @@ while i < len(result):
 ################################################ Change BackGround Start ################################
 # cv2.imshow("BlackWhite", bw)
 # Close the gaps
+
 mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
 #cv2.imshow("Morphology Close", mask)
 
 # Fill the region with white color
-cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
-cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
+# cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
+# cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
 #cv2.imshow("Mask", mask)
 
 # Create a blue background
-blue_bgnd = np.zeros_like(img_resized)
+blue_bgnd = np.zeros_like(img_bright)
 blue_bgnd[:, :, 0] = 255  # blue color
 # Copy each object in the image to blue background
-cv2.copyTo(img_resized, mask, blue_bgnd)
+cv2.copyTo(img_bright, mask, blue_bgnd)
 
 # Import a background image
 table_bgnd = cv2.imread("background.jpg")
-height, width = img_resized.shape[:2]
+height, width = img_bright.shape[:2]
 table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
-cv2.copyTo(img_resized, mask, table_bgnd)
+cv2.copyTo(img_bright, mask, table_bgnd)
 
 cv2.imshow("Blue Background", blue_bgnd)
 cv2.imshow("Table Background", table_bgnd)
