@@ -119,7 +119,7 @@ hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 255, 255])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([40, 40, 40])
+lower_green = np.array([60, 50, 50])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])

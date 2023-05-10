@@ -128,7 +128,7 @@ hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 255, 255])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([40, 40, 40])
+lower_green = np.array([60, 50, 50])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])
@@ -154,19 +154,19 @@ contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPL
 contours3, _ = cv2.findContours(mask3, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 # Check color on the image
-def checkColor(contour):
+def checkColor(contour,colour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
-        if area > 100:
+        if area > 400:
             color += 1
     return color
 
 
 # check object with color Red, green, and blue colour
-red = checkColor(contours1)
-green = checkColor(contours2)
-blue = checkColor(contours3)
+red = checkColor(contours1,(255,0,0))
+green = checkColor(contours2,(0,255,0))
+blue = checkColor(contours3,(0,0,255))
 
 ################################################ OBJECT COLOR END ################################
 

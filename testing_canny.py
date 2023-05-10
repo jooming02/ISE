@@ -6,7 +6,7 @@ def f(x):
     print(x)
     return(x)
 #ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-img = cv2.imread("image4.jpg")
+img = cv2.imread("image12.jpg")
 
 print("Size of image: ", img.shape)
 

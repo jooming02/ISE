@@ -4,14 +4,15 @@ import numpy as np
 # Read the image file
 img = cv2.imread("image8.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
-img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
+img_resized = cv2.resize(img, None, fx=0.2, fy=0.2)
 # cv2.imshow("Original Image", img)
 # cv2.imshow("Resized Image", img_resized)
 
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
-r, bw = cv2.threshold(grey, 100, 255, cv2.THRESH_BINARY)
+r, bw = cv2.threshold(grey, 50, 255, cv2.THRESH_BINARY)
+cv2.imshow("bw",bw)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
@@ -33,7 +34,8 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    if width > 10 and width < 106:
+    print(width*height)
+    if width*height > 4000 and width < 30000:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
 
@@ -119,7 +121,7 @@ hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 255, 255])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([40, 40, 40])
+lower_green = np.array([60, 50, 50])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])
