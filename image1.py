@@ -28,6 +28,7 @@ N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 
 # Declare the counter as 0
 cnt = 0
+i=0
 for s in stats:
     x = s[0]
     y = s[1]
@@ -36,6 +37,10 @@ for s in stats:
     if width > 10 and width < 106:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
+        w = int(width / 2)
+        h = int(height / 2)
+        cv2.putText(img_counting, str(i + 1), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i = i + 1
 
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
@@ -56,14 +61,6 @@ for co in cont:
     if area > 1200:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 5)
-        # find the center of mass for object
-        M = cv2.moments(co)
-        cx = int(M['m10'] / M['m00'])
-        cy = int(M['m01'] / M['m00'])
-        # Add text to each object
-        cv2.putText(img_counting, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        i = i + 1
-
         # find the largest object
         if area > max_area:
             max_area = area
@@ -75,7 +72,6 @@ for co in cont:
 
 # create a new copy of resized image to draw the largest and smallest object
 img_size = np.copy(img_resized)
-
 # find the center of mass for object
 L = cv2.moments(largest)
 S = cv2.moments(smallest)
@@ -83,11 +79,9 @@ cxl = int(L['m10'] / L['m00'])
 cyl = int(L['m01'] / L['m00'])
 cxs = int(S['m10'] / S['m00'])
 cys = int(S['m01'] / S['m00'])
-
 # Adding text to largest and smallest object
 cv2.putText(img_size, "largest", (cxl, cyl), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
 # draw the contour for largest object and smallest object
 cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 5)
 cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 5)
@@ -160,6 +154,9 @@ blue = checkColor(contours3)
 
 # Display result
 print("Number of objects: ", cnt)
+print("-----------------------------------------------------------")
+print("Area of Largest Object: ", cv2.contourArea(largest))
+print("Area of Smallest Object: ", cv2.contourArea(smallest))
 print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)

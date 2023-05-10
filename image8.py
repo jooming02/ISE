@@ -14,7 +14,6 @@ img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
 r, bw = cv2.threshold(grey, 50, 255, cv2.THRESH_BINARY)
-cv2.imshow("bw",bw)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
@@ -38,7 +37,6 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    print(width)
     # if height > 40 and height < 200:
     if width > 40 and width < 200:
         cnt += 1
@@ -59,7 +57,7 @@ largest = None
 smallest = None
 
 for co in cont:
-    print("Area : ", cv2.contourArea(co), ", --- Perimeter : ", cv2.arcLength(co, True))
+    # print("Area : ", cv2.contourArea(co), ", --- Perimeter : ", cv2.arcLength(co, True))
     area = cv2.contourArea(co)
     eps = 0.04 * cv2.arcLength(co, True)
     approx_cont = cv2.approxPolyDP(co, eps, True)
@@ -163,6 +161,9 @@ blue = checkColor(contours3)
 
 # Display result
 print("Number of objects: ", cnt)
+print("-----------------------------------------------------------")
+print("Area of Largest Object: ", cv2.contourArea(largest))
+print("Area of Smallest Object: ", cv2.contourArea(smallest))
 print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)
