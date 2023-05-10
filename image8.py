@@ -5,6 +5,8 @@ import numpy as np
 img = cv2.imread("image8.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.2, fy=0.2)
+brightness = 2
+img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 # cv2.imshow("Original Image", img)
 # cv2.imshow("Resized Image", img_resized)
 
@@ -29,21 +31,27 @@ N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 
 # Declare the counter as 0
 cnt = 0
+i = 0
+
 for s in stats:
     x = s[0]
     y = s[1]
     width = s[2]
     height = s[3]
-    print(width*height)
-    if width*height > 4000 and width < 30000:
+    print(width)
+    # if height > 40 and height < 200:
+    if width > 40 and width < 200:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
+        w = int(width/2)
+        h = int(height/2)
+        cv2.putText(img_counting, str(i + 1), (x+w,y+h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        i=i+1
 
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
-i = 0
 
 max_area = 0
 min_area = float('inf')
@@ -51,20 +59,13 @@ largest = None
 smallest = None
 
 for co in cont:
-    # print("Area : ", cv2.contourArea(co), ", --- Perimeter : ", cv2.arcLength(co, True))
+    print("Area : ", cv2.contourArea(co), ", --- Perimeter : ", cv2.arcLength(co, True))
     area = cv2.contourArea(co)
     eps = 0.04 * cv2.arcLength(co, True)
     approx_cont = cv2.approxPolyDP(co, eps, True)
-    if area > 1200:
+    if area > 2500:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 5)
-        # find the center of mass for object
-        M = cv2.moments(co)
-        cx = int(M['m10'] / M['m00'])
-        cy = int(M['m01'] / M['m00'])
-        # Add text to each object
-        cv2.putText(img_counting, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        i = i + 1
 
         # find the largest object
         if area > max_area:
@@ -175,6 +176,7 @@ print("-----------------------------------------------------------")
 
 ################################################ Extract One By One Start ################################
 
+
 # Contouring
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
@@ -186,7 +188,7 @@ img_obj = np.copy(img_resized)
 #draw contour one by one in new img_obj
 for co in cont:
     area = cv2.contourArea(co)
-    if area > 1200:
+    if area > 2500:
         mask = np.zeros(img_obj.shape[:2], np.uint8)
         cv2.drawContours(mask, [co], -1, 255, -1)
         result.append(cv2.bitwise_and(img_obj, img_obj, mask=mask))
@@ -202,26 +204,27 @@ while i < len(result):
 ################################################ Change BackGround Start ################################
 # cv2.imshow("BlackWhite", bw)
 # Close the gaps
+
 mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
 #cv2.imshow("Morphology Close", mask)
 
 # Fill the region with white color
-cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
-cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
+# cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
+# cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
 #cv2.imshow("Mask", mask)
 
 # Create a blue background
-blue_bgnd = np.zeros_like(img_resized)
+blue_bgnd = np.zeros_like(img_bright)
 blue_bgnd[:, :, 0] = 255  # blue color
 # Copy each object in the image to blue background
-cv2.copyTo(img_resized, mask, blue_bgnd)
+cv2.copyTo(img_bright, mask, blue_bgnd)
 
 # Import a background image
 table_bgnd = cv2.imread("background.jpg")
-height, width = img_resized.shape[:2]
+height, width = img_bright.shape[:2]
 table_bgnd = cv2.resize(table_bgnd, (width, height))
 # Copy each object in the image to background image
-cv2.copyTo(img_resized, mask, table_bgnd)
+cv2.copyTo(img_bright, mask, table_bgnd)
 
 cv2.imshow("Blue Background", blue_bgnd)
 cv2.imshow("Table Background", table_bgnd)
