@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-# Read the image file
+# Read th imeage file
 img = cv2.imread("image7.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.3, fy=0.3)
@@ -18,13 +18,15 @@ r, bw = cv2.threshold(grey,30, 255, cv2.THRESH_BINARY)
 cv2.imshow("bw",bw)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-
+# Close the gaps
+mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=2)
+cv2.imshow("Morphology Close", mask)
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
-img_counting = np.copy(img_resized)
+img_counting = np.copy(img_bright)
 # create a new copy of resized image to count the total number of object in different shape
-img_shape = np.copy(img_resized)
+img_shape = np.copy(img_bright)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 # print("Number of connected components : ", N)
@@ -43,7 +45,7 @@ for s in stats:
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
         w = int(width / 2)
         h = int(height / 2)
-        cv2.putText(img_counting, str(i + 1), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        cv2.putText(img_counting, str(i + 1), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         i = i + 1
 
 # Contouring
@@ -76,7 +78,7 @@ for co in cont:
             smallest = co
 
 # create a new copy of resized image to draw the largest and smallest object
-img_size = np.copy(img_resized)
+img_size = np.copy(img_bright)
 
 # find the center of mass for object
 L = cv2.moments(largest)
@@ -113,7 +115,7 @@ cv2.imshow("Detect Object", img_counting)
 
 ################################################ OBJECT COLOR START ################################
 # create a new copy of resized image to count the total number of object in different colour.
-img_color = np.copy(img_resized)
+img_color = np.copy(img_bright)
 # Convert to HSV color space
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
@@ -184,15 +186,15 @@ cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 result = []
 
 # create a new copy of resized image to extract object one by one
-img_obj = np.copy(img_resized)
+img_obj = np.copy(img_bright)
 
 #draw contour one by one in new img_obj
 for co in cont:
     area = cv2.contourArea(co)
     if area > 1200:
-        mask = np.zeros(img_obj.shape[:2], np.uint8)
-        cv2.drawContours(mask, [co], -1, 255, -1)
-        result.append(cv2.bitwise_and(img_obj, img_obj, mask=mask))
+        black_mask = np.zeros(img_obj.shape[:2], np.uint8)
+        cv2.drawContours(black_mask, [co], -1, 255, -1)
+        result.append(cv2.bitwise_and(img_obj, img_obj, mask=black_mask))
 
 i = 0
 while i < len(result):
@@ -203,16 +205,6 @@ while i < len(result):
 ################################################ One By One End ################################
 
 ################################################ Change BackGround Start ################################
-# cv2.imshow("BlackWhite", bw)
-# Close the gaps
-
-mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
-#cv2.imshow("Morphology Close", mask)
-
-# Fill the region with white color
-# cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
-# cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
-#cv2.imshow("Mask", mask)
 
 # Create a blue background
 blue_bgnd = np.zeros_like(img_bright)

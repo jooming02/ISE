@@ -21,9 +21,9 @@ morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
-img_counting = np.copy(img_resized)
+img_counting = np.copy(img_bright)
 # create a new copy of resized image to count the total number of object in different shape
-img_shape = np.copy(img_resized)
+img_shape = np.copy(img_bright)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
 # print("Number of connected components : ", N)
@@ -38,7 +38,6 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    # if height > 40 and height < 200:
     if width > 40 and width < 200:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
@@ -76,7 +75,7 @@ for co in cont:
             smallest = co
 
 # create a new copy of resized image to draw the largest and smallest object
-img_size = np.copy(img_resized)
+img_size = np.copy(img_bright)
 
 # find the center of mass for object
 L = cv2.moments(largest)
@@ -113,7 +112,7 @@ cv2.imshow("Detect Object", img_counting)
 
 ################################################ OBJECT COLOR START ################################
 # create a new copy of resized image to count the total number of object in different colour.
-img_color = np.copy(img_resized)
+img_color = np.copy(img_bright)
 # Convert to HSV color space
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
@@ -185,7 +184,7 @@ cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 result = []
 
 # create a new copy of resized image to extract object one by one
-img_obj = np.copy(img_resized)
+img_obj = np.copy(img_bright)
 
 #draw contour one by one in new img_obj
 for co in cont:
@@ -205,15 +204,10 @@ while i < len(result):
 
 ################################################ Change BackGround Start ################################
 # cv2.imshow("BlackWhite", bw)
+
 # Close the gaps
-
-mask = cv2.morphologyEx(bw, cv2.MORPH_CLOSE, kernel=morp_ker, iterations=1)
-#cv2.imshow("Morphology Close", mask)
-
-# Fill the region with white color
-# cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
-# cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
-#cv2.imshow("Mask", mask)
+mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=2)
+cv2.imshow("Morphology Close", mask)
 
 # Create a blue background
 blue_bgnd = np.zeros_like(img_bright)
