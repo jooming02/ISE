@@ -43,6 +43,7 @@ N, idx, stats, cent = cv2.connectedComponentsWithStats(edges)
 
 # Declare the counter as 0
 cnt = 0
+i = 0
 for s in stats:
     x = s[0]
     y = s[1]
@@ -52,12 +53,15 @@ for s in stats:
     if width > 5 and height>20 and width < 300:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
+        w = int(width / 2)
+        h = int(height / 2)
+        cv2.putText(img_counting, str(i + 1), (x + w, y + h), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+        i = i + 1
 
 # Contouring
 cont, hier = cv2.findContours(mask, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
-i = 0
 
 max_area = 0
 min_area = float('inf')
@@ -73,13 +77,6 @@ for co in cont:
     if area > 300:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 2)
-        # find the center of mass for object
-        M = cv2.moments(co)
-        cx = int(M['m10'] / M['m00'])
-        cy = int(M['m01'] / M['m00'])
-        # Add text to each object
-        cv2.putText(img_counting, str(i + 1), (cx, cy), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-        i = i + 1
 
         # find the largest object
         if area > max_area:
@@ -180,6 +177,9 @@ blue = checkColor(contours3)
 
 # Display result
 print("Number of objects: ", cnt)
+print("-----------------------------------------------------------")
+print("Area of Largest Object: ", cv2.contourArea(largest))
+print("Area of Smallest Object: ", cv2.contourArea(smallest))
 print("-----------------------------------------------------------")
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)

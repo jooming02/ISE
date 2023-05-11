@@ -52,7 +52,6 @@ for s in stats:
 cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 contour = []
-i = 0
 
 max_area = 0
 min_area = float('inf')
