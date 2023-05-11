@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 
 # Read the image file
-img = cv2.imread("image11.jpg")
+img = cv2.imread("image6.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.2, fy=0.2)
 brightness = 2
