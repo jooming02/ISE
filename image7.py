@@ -12,15 +12,11 @@ img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
-# Apply the sharpening kernel to the grayscale image
+grey = cv2.medianBlur(grey, 11)
+
 # Convert to binary image
 r, bw = cv2.threshold(grey,30, 255, cv2.THRESH_BINARY)
 cv2.imshow("bw",bw)
-# Kernel for morphology
-morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
-# Close the gaps
-mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=2)
-cv2.imshow("Morphology Close", mask)
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
@@ -204,7 +200,7 @@ while i < len(result):
 ################################################ One By One End ################################
 
 ################################################ Change BackGround Start ################################
-
+mask = np.copy(bw)
 # Create a blue background
 blue_bgnd = np.zeros_like(img_bright)
 blue_bgnd[:, :, 0] = 255  # blue color

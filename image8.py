@@ -163,7 +163,7 @@ contours4, _ = cv2.findContours(mask4, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPL
 contours5, _ = cv2.findContours(mask5, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 # Check color on the image
-def checkColor(contour,colour):
+def checkColor(contour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
@@ -172,11 +172,11 @@ def checkColor(contour,colour):
     return color
 
 # check object with color Red, green, and blue colour
-red = checkColor(contours1,(255,0,0))
-green = checkColor(contours2,(0,255,0))
-blue = checkColor(contours3,(0,0,255))
-brown = checkColor(contours4, (0,0,255))
-silver = checkColor(contours5, (0,0,255))
+red = checkColor(contours1)
+green = checkColor(contours2)
+blue = checkColor(contours3)
+brown = checkColor(contours4)
+silver = checkColor(contours5)
 
 ################################################ OBJECT COLOR END ################################
 
@@ -202,7 +202,7 @@ print("-----------------------------------------------------------")
 ################################################ Extract One By One Start ################################
 
 # Contouring
-cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
+cont, hier = cv2.findContours(mask, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 result = []
 

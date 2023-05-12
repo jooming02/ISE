@@ -6,26 +6,20 @@ img = cv2.imread("image9.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
 # cv2.imshow("Original Image", img)
-# cv2.imshow("Resized Image", img_resized)
-
-# Brighten the image
-# brightness = 1.0
-# img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
-# cv2.imshow("Bright Image ",img_bright)
+cv2.imshow("Resized Image", img_resized)
 
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 # Convert to binary image
-r, bw = cv2.threshold(grey, 80, 255, cv2.THRESH_BINARY)
+r, bw = cv2.threshold(grey, 70, 255, cv2.THRESH_BINARY)
 cv2.imshow("BlackWhite", bw)
 # Kernel for morphology
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Close the gaps
-mask = cv2.morphologyEx(bw, cv2.MORPH_ERODE, kernel=morp_ker, iterations=1)
+mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=2)
 cv2.imshow("Morphology Close", mask)
-# Fill the region with white color
-cv2.floodFill(bw, None, (170, 220), (255, 0, 0))
-cv2.imshow("Mask", bw)
+mask[130:195, 100:200] = 0
+cv2.imshow("Mask", mask)
 
 # Edge detection
 edges = cv2.Canny(img_resized, 230, 330)
@@ -49,8 +43,8 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    print(width)
-    if width > 5 and height>20 and width < 300:
+    #print(width)
+    if height>20 and width < 300:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
         w = int(width / 2)
@@ -74,7 +68,7 @@ for co in cont:
     eps = 0.04 * cv2.arcLength(co, True)
     approx_cont = cv2.approxPolyDP(co, eps, True)
     # Get Rid of the area of the hole
-    if area > 300:
+    if area > 100:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 2)
 
@@ -106,11 +100,14 @@ cv2.putText(img_size, "smallest", (cxs, cys), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (25
 cv2.drawContours(img_size, [largest], -1, (0, 255, 0), 2)
 cv2.drawContours(img_size, [smallest], -1, (0, 255, 0), 2)
 
+cylinder = 0
 triangle = 0
 rectangle = 0
 circle = 0
 for i in contour:
-    if i == 3:
+    if i ==2:
+        cylinder +=1
+    elif i == 3:
         triangle += 1
     elif i == 4:
         rectangle += 1
@@ -133,45 +130,55 @@ hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 255, 255])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([40, 40, 40])
+lower_green = np.array([60, 50, 50])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])
 upper_blue = np.array([130, 255, 255])
 
+lower_brown = np.array([5, 10, 100])
+upper_brown = np.array([40, 210, 200])
+
+lower_silver = np.array([0, 0, 180])
+upper_silver = np.array([180, 50, 255])
+
 # Threshold the image to get a binary mask of the colour pixels
 mask1 = cv2.inRange(hsv, lower_red, upper_red)
 mask2 = cv2.inRange(hsv, lower_green, upper_green)
 mask3 = cv2.inRange(hsv, lower_blue, upper_blue)
+mask4 = cv2.inRange(hsv, lower_brown, upper_brown)
+mask5 = cv2.inRange(hsv, lower_silver, upper_silver)
 
 # Apply a morphological closing operation to merge the nearby same colour area
 kernel = np.ones((21, 21), np.uint8)
 mask1 = cv2.morphologyEx(mask1, cv2.MORPH_CLOSE, kernel)
 mask2 = cv2.morphologyEx(mask2, cv2.MORPH_CLOSE, kernel)
 mask3 = cv2.morphologyEx(mask3, cv2.MORPH_CLOSE, kernel)
-# cv2.imshow("mask1", mask1)
-# cv2.imshow("mask2", mask2)
-# cv2.imshow("mask3", mask3)
+mask4 = cv2.morphologyEx(mask4, cv2.MORPH_CLOSE, kernel)
+mask5 = cv2.morphologyEx(mask5, cv2.MORPH_CLOSE, kernel)
 
 # Find contours in the mask
 contours1, _ = cv2.findContours(mask1, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 contours2, _ = cv2.findContours(mask2, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 contours3, _ = cv2.findContours(mask3, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+contours4, _ = cv2.findContours(mask4, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+contours5, _ = cv2.findContours(mask5, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 # Check color on the image
 def checkColor(contour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
-        if area > 100:
+        if area > 400:
             color += 1
     return color
 
-
+cv2.imshow("Colour", img_color)
 # check object with color Red, green, and blue colour
 red = checkColor(contours1)
 green = checkColor(contours2)
 blue = checkColor(contours3)
+brown = checkColor(contours4)
+silver = checkColor(contours5)
 
 ################################################ OBJECT COLOR END ################################
 
@@ -181,6 +188,7 @@ print("-----------------------------------------------------------")
 print("Area of Largest Object: ", cv2.contourArea(largest))
 print("Area of Smallest Object: ", cv2.contourArea(smallest))
 print("-----------------------------------------------------------")
+print("Number of cylinder: ", cylinder)
 print("Number of triangles: ", triangle)
 print("Number of rectangles: ", rectangle)
 print("Number of circles: ", circle)
@@ -188,13 +196,15 @@ print("-----------------------------------------------------------")
 print("Number of red objects:" + str(red))
 print("Number of green objects:" + str(green))
 print("Number of blue objects:" + str(blue))
-print("Number of other color objects:" + str(cnt-blue-red-green))
+print("Number of brown objects:" + str(brown))
+print("Number of silver objects:" + str(silver))
+print("Number of other color objects:" + str(cnt-blue-red-green-brown-silver))
 print("-----------------------------------------------------------")
 
 ################################################ Extract One By One Start ################################
 
 # Contouring
-cont, hier = cv2.findContours(bw, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
+cont, hier = cv2.findContours(mask, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
 
 result = []
 
