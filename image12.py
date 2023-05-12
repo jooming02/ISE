@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 # Read the image file
-img = cv2.imread("image11.jpg")
+img = cv2.imread("image12.jpg")
 orange = cv2.imread("orange.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img = cv2.resize(img, None, fx=0.1, fy=0.1)
@@ -23,7 +23,7 @@ width_orange = orange.shape[1]
 height_orange = orange.shape[0]
 
 # Find multiple object with 60% similarity
-threshold = .61
+threshold = .60
 yloc, xloc = np.where(result>=threshold)
 
 for (x,y) in zip(xloc, yloc):
