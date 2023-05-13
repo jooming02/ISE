@@ -146,7 +146,7 @@ def checkColor(contour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
-        if area > 1000:
+        if area > 2500:
             color += 1
     return color
 
