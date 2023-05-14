@@ -3,7 +3,7 @@ import numpy as np
 
 # Read th imeage file
 img = cv2.imread("image7.jpg")
-# Reduce size of output to 10% with preserve aspect ratio
+# Reduce size of output to 30% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.3, fy=0.3)
 brightness = 2
 img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)

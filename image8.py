@@ -21,7 +21,7 @@ cv2.imshow("BlackWhite", bw)
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Close the gaps
 mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=1)
-cv2.imshow("Morphology Close", mask)
+cv2.imshow("Morphology Open", mask)
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
