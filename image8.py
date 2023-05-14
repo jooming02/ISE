@@ -30,8 +30,6 @@ img_counting = np.copy(img_bright)
 img_shape = np.copy(img_bright)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(mask)
-# print("Number of connected components : ", N)
-# print(" Indices : ", np.unique(idx))
 
 # Declare the counter as 0
 cnt = 0
@@ -41,7 +39,6 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    #print(width)
     if width > 4 and width < 300:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
@@ -52,9 +49,7 @@ for s in stats:
 
 # Contouring
 cont, hier = cv2.findContours(mask, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
-
 contour = []
-
 max_area = 0
 min_area = float('inf')
 largest = None
@@ -69,7 +64,6 @@ for co in cont:
     if area > 100:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 5)
-
         # find the largest object
         if area > max_area:
             max_area = area
@@ -104,7 +98,7 @@ rectangle = 0
 circle = 0
 for i in contour:
     if i ==2:
-        cylinder +=1
+        cylinder += 1
     elif i == 3:
         triangle += 1
     elif i == 4:
@@ -125,7 +119,7 @@ img_color = np.copy(img_bright)
 hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 
 # Define the range of color in HSV
-lower_red = np.array([0, 255, 255])
+lower_red = np.array([0, 50, 50])
 upper_red = np.array([10, 255, 255])
 
 lower_green = np.array([60, 50, 50])
@@ -222,7 +216,7 @@ while i < len(result):
     # Display each object in array result one by one
     cv2.imshow("object" + str(i + 1), result[i])
     i = i + 1
-
+    
 ################################################ One By One End ################################
 
 ################################################ Change BackGround Start ################################
