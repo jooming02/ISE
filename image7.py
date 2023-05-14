@@ -15,7 +15,6 @@ cv2.imshow("Brighten Image", img_bright)
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
 grey = cv2.medianBlur(grey, 11)
-
 # Convert to binary image
 r, bw = cv2.threshold(grey,30, 255, cv2.THRESH_BINARY)
 cv2.imshow("bw",bw)
