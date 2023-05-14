@@ -8,7 +8,9 @@ img_resized = cv2.resize(img, None, fx=0.2, fy=0.2)
 brightness = 1.5
 img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 # cv2.imshow("Original Image", img)
-# cv2.imshow("Resized Image", img_resized)
+cv2.imshow("Resized Image", img_resized)
+cv2.imshow("Bright Image", img_bright)
+
 
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)

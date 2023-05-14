@@ -8,7 +8,9 @@ img_resized = cv2.resize(img, None, fx=0.3, fy=0.3)
 brightness = 2
 img_bright = cv2.convertScaleAbs(img_resized, alpha=brightness, beta=0)
 # cv2.imshow("Original Image", img)
-# cv2.imshow("Resized Image", img_resized)
+cv2.imshow("Resized Image", img_resized)
+cv2.imshow("Brighten Image", img_bright)
+
 
 # Convert to grayscale image
 grey = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
@@ -118,7 +120,7 @@ hsv = cv2.cvtColor(img_color, cv2.COLOR_BGR2HSV)
 lower_red = np.array([0, 50, 50])
 upper_red = np.array([10, 255, 255])
 
-lower_green = np.array([20, 40, 40])
+lower_green = np.array([60, 50, 50])
 upper_green = np.array([80, 255, 255])
 
 lower_blue = np.array([90, 50, 50])
@@ -145,7 +147,7 @@ def checkColor(contour):
     color = 0
     for co in contour:
         area = cv2.contourArea(co)
-        if area > 1000:
+        if area > 1200:
             color += 1
     return color
 
