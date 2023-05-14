@@ -17,13 +17,13 @@ cv2.imshow("BlackWhite", bw)
 morp_ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
 # Close the gaps
 mask = cv2.morphologyEx(bw, cv2.MORPH_OPEN, kernel=morp_ker, iterations=2)
-cv2.imshow("Morphology Close", mask)
+cv2.imshow("Morphology Open", mask)
 mask[130:195, 100:200] = 0
 cv2.imshow("Mask", mask)
 
 # Edge detection
 edges = cv2.Canny(img_resized, 230, 330)
-cv2.imshow("Edge_Blurred", edges)
+cv2.imshow("Edge_Detection", edges)
 
 ################################################ find shape,total and size Start ################################
 # create a new copy of resized image to count the total number of object in the image
@@ -32,8 +32,6 @@ img_counting = np.copy(img_resized)
 img_shape = np.copy(img_resized)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(edges)
-# print("Number of connected components : ", N)
-# print(" Indices : ", np.unique(idx))
 
 # Declare the counter as 0
 cnt = 0
@@ -43,7 +41,6 @@ for s in stats:
     y = s[1]
     width = s[2]
     height = s[3]
-    #print(width)
     if height>20 and width < 300:
         cnt += 1
         cv2.rectangle(img_counting, (x, y), (x + width, y + height), (0, 0, 255), 3)
@@ -54,9 +51,7 @@ for s in stats:
 
 # Contouring
 cont, hier = cv2.findContours(mask, cv2.CHAIN_APPROX_SIMPLE, cv2.RETR_TREE)
-
 contour = []
-
 max_area = 0
 min_area = float('inf')
 largest = None
@@ -71,7 +66,6 @@ for co in cont:
     if area > 100:
         contour.append(len(approx_cont))
         cv2.drawContours(img_shape, [approx_cont], -1, (255, 0, 0), 2)
-
         # find the largest object
         if area > max_area:
             max_area = area
@@ -228,11 +222,6 @@ while i < len(result):
 ################################################ One By One End ################################
 
 ################################################ Change BackGround Start ################################
-
-# Fill the region with white color
-# cv2.floodFill(mask, None, (204, 80), (255, 0, 0))
-# cv2.floodFill(mask, None, (204, 40), (255, 0, 0))
-#cv2.imshow("Mask", mask)
 
 # Create a blue background
 blue_bgnd = np.zeros_like(img_resized)
