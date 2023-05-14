@@ -6,7 +6,7 @@ img = cv2.imread("image8.jpg")
 # Reduce size of output to 10% with preserve aspect ratio
 img_resized = cv2.resize(img, None, fx=0.1, fy=0.1)
 # cv2.imshow("Original Image", img)
-# cv2.imshow("Resized Image", img_resized)
+cv2.imshow("Resized Image", img_resized)
 
 # Brighten the image
 brightness = 1.8
