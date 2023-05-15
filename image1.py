@@ -23,8 +23,6 @@ img_counting = np.copy(img_resized)
 img_shape = np.copy(img_resized)
 
 N, idx, stats, cent = cv2.connectedComponentsWithStats(bw)
-# print("Number of connected components : ", N)
-# print(" Indices : ", np.unique(idx))
 
 # Declare the counter as 0
 cnt = 0
@@ -221,7 +219,5 @@ cv2.imshow("Blue Background", blue_bgnd)
 cv2.imshow("Table Background", table_bgnd)
 
 ################################################ Change BackGround End ################################
-# cv2.imshow("BlackWhite", bw)
-# cv2.imshow("GreyScale", grey)
 
 cv2.waitKey(0)

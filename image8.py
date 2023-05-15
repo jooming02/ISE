@@ -239,6 +239,5 @@ cv2.imshow("Table Background", table_bgnd)
 
 ################################################ Change BackGround End ################################
 
-# cv2.imshow("GreyScale", grey)
 
 cv2.waitKey(0)
